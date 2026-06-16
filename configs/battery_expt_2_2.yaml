@@ -1,0 +1,20 @@
+dataset_name: expt_2_2_c_based_degradation
+
+root_dir: data/raw/battery/expt_2_2
+metadata_file: experiment_metadata.xlsx
+
+experiment_key: "expt 2,2"
+experiment_folder: "Expt 2,2 - C-based Degradation 2"
+
+summary_dir: "Summary Data"
+timeseries_dir: "Processed Timeseries Data"
+
+cells: ["A", "B", "C", "D", "E", "F"]
+
+target:
+  name: "SoH"
+  prediction_mode: "next_step"
+
+evaluation:
+  split: "leave_one_cell_out"
+  primary_metric: "rmse"
