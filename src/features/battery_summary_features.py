@@ -201,3 +201,139 @@ def build_next_soh_dataset(rpt_df: pd.DataFrame) -> pd.DataFrame:
     df = df.dropna(subset=["target_soh_next"]).reset_index(drop=True)
 
     return df
+
+
+def build_horizon_soh_dataset(
+    rpt_df: pd.DataFrame,
+    horizon: int = 3,
+) -> pd.DataFrame:
+    """
+    Build a fixed-horizon supervised dataset.
+
+    Feature at RPT_t -> target SOH at RPT_{t+horizon}
+    """
+    df = rpt_df.copy()
+    df = df.sort_values(["cell_id", "rpt_index"]).reset_index(drop=True)
+
+    grouped = df.groupby("cell_id", group_keys=False)
+
+    df[f"target_soh_h{horizon}"] = grouped["soh"].shift(-horizon)
+    df[f"target_capacity_h{horizon}"] = grouped["capacity_c10"].shift(-horizon)
+
+    df["delta_charge_throughput"] = grouped["charge_throughput"].diff()
+    df["capacity_delta_prev"] = grouped["capacity_c10"].diff()
+    df["soh_delta_prev"] = grouped["soh"].diff()
+    df["resistance_delta_prev"] = grouped["resistance_0p1s"].diff()
+
+    delta_cols = [
+        "delta_charge_throughput",
+        "capacity_delta_prev",
+        "soh_delta_prev",
+        "resistance_delta_prev",
+    ]
+
+    for col in delta_cols:
+        if col in df.columns:
+            df[col] = df[col].fillna(0)
+
+    df = df.dropna(subset=[f"target_soh_h{horizon}"]).reset_index(drop=True)
+
+    return df
+
+
+def build_early_point_to_last_dataset(
+    rpt_df: pd.DataFrame,
+    early_rpt_max: int = 3,
+) -> pd.DataFrame:
+    """
+    Build an early-point-to-last prognosis dataset.
+
+    Keep only early RPT rows and assign each row the last available SOH/capacity
+    from the same cell as the target.
+    """
+    df = rpt_df.copy()
+    df = df.sort_values(["cell_id", "rpt_index"]).reset_index(drop=True)
+
+    grouped = df.groupby("cell_id", group_keys=False)
+
+    df["target_soh_last"] = grouped["soh"].transform("last")
+    df["target_capacity_last"] = grouped["capacity_c10"].transform("last")
+    df["target_rpt_last"] = grouped["rpt_index"].transform("last")
+
+    df["delta_charge_throughput"] = grouped["charge_throughput"].diff()
+    df["capacity_delta_prev"] = grouped["capacity_c10"].diff()
+    df["soh_delta_prev"] = grouped["soh"].diff()
+    df["resistance_delta_prev"] = grouped["resistance_0p1s"].diff()
+
+    delta_cols = [
+        "delta_charge_throughput",
+        "capacity_delta_prev",
+        "soh_delta_prev",
+        "resistance_delta_prev",
+    ]
+
+    for col in delta_cols:
+        if col in df.columns:
+            df[col] = df[col].fillna(0)
+
+    df = df[df["rpt_index"] <= early_rpt_max].reset_index(drop=True)
+
+    return df
+
+
+def build_early_trajectory_to_last_dataset(
+    rpt_df: pd.DataFrame,
+    early_rpt_max: int = 3,
+) -> pd.DataFrame:
+    """
+    Build an early-trajectory-to-last prognosis dataset.
+
+    One row = one cell.
+    Input = flattened early trajectory from RPT0..RPT_early_rpt_max.
+    Target = last available SOH/capacity of that cell.
+    """
+    df = rpt_df.copy()
+    df = df.sort_values(["cell_id", "rpt_index"]).reset_index(drop=True)
+    grouped = df.groupby("cell_id", group_keys=False)
+    df["delta_charge_throughput"] = grouped["charge_throughput"].diff().fillna(0)
+    df["resistance_delta_prev"] = grouped["resistance_0p1s"].diff().fillna(0)
+
+    rows = []
+    base_cols = [
+        "temperature",
+        "soc_range",
+    ]
+    trajectory_cols = [
+        "charge_throughput",
+        "energy_throughput",
+        "resistance_0p1s",
+        "delta_charge_throughput",
+        "resistance_delta_prev",
+        "ageing_cycles",
+        "days_of_degradation",
+    ]
+
+    for cell_id, sub in df.groupby("cell_id"):
+        sub = sub.sort_values("rpt_index").reset_index(drop=True)
+        early = sub[sub["rpt_index"] <= early_rpt_max].copy()
+        if len(early) < early_rpt_max + 1:
+            continue
+
+        record = {
+            "cell_id": cell_id,
+            "target_soh_last": sub["soh"].iloc[-1],
+            "target_capacity_last": sub["capacity_c10"].iloc[-1],
+            "target_rpt_last": sub["rpt_index"].iloc[-1],
+        }
+
+        for col in base_cols:
+            record[col] = early[col].iloc[0]
+
+        for _, row in early.iterrows():
+            rpt_idx = int(row["rpt_index"])
+            for col in trajectory_cols:
+                record[f"{col}_rpt{rpt_idx}"] = row[col]
+
+        rows.append(record)
+
+    return pd.DataFrame(rows)

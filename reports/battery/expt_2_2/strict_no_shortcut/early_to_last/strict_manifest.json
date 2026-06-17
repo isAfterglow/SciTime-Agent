@@ -1,0 +1,24 @@
+{
+  "task": "early_to_last",
+  "dataset": "data/processed/battery/expt_2_2/summary_early_to_last_dataset.csv",
+  "target": "target_soh_last",
+  "feature_set": "process_plus_resistance",
+  "feature_columns": [
+    "temperature",
+    "rpt_index",
+    "charge_throughput",
+    "energy_throughput",
+    "ageing_cycles",
+    "days_of_degradation",
+    "delta_charge_throughput",
+    "soc_range",
+    "resistance_0p1s",
+    "resistance_delta_prev"
+  ],
+  "models": [
+    "LinearRegression",
+    "GradientBoosting",
+    "RandomForest",
+    "Ridge"
+  ]
+}

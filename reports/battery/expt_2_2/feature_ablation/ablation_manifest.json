@@ -1,0 +1,73 @@
+{
+  "target": "target_soh_next",
+  "dataset": "data/processed/battery/expt_2_2/summary_next_soh_dataset.csv",
+  "models": [
+    "LinearRegression",
+    "GradientBoosting",
+    "RandomForest",
+    "Ridge"
+  ],
+  "feature_sets": {
+    "persistence": [
+      "soh -> y_pred"
+    ],
+    "process_only": [
+      "temperature",
+      "rpt_index",
+      "charge_throughput",
+      "energy_throughput",
+      "ageing_cycles",
+      "days_of_degradation",
+      "delta_charge_throughput",
+      "soc_range"
+    ],
+    "process_plus_resistance": [
+      "temperature",
+      "rpt_index",
+      "charge_throughput",
+      "energy_throughput",
+      "ageing_cycles",
+      "days_of_degradation",
+      "delta_charge_throughput",
+      "soc_range",
+      "resistance_0p1s",
+      "resistance_delta_prev"
+    ],
+    "capacity_only": [
+      "capacity_c10"
+    ],
+    "capacity_with_delta": [
+      "capacity_c10",
+      "capacity_delta_prev"
+    ],
+    "soh_only": [
+      "soh"
+    ],
+    "soh_with_delta": [
+      "soh",
+      "soh_delta_prev"
+    ],
+    "state_only": [
+      "capacity_c10",
+      "soh",
+      "capacity_delta_prev",
+      "soh_delta_prev"
+    ],
+    "state_aware_full": [
+      "temperature",
+      "rpt_index",
+      "charge_throughput",
+      "energy_throughput",
+      "ageing_cycles",
+      "days_of_degradation",
+      "delta_charge_throughput",
+      "soc_range",
+      "resistance_0p1s",
+      "resistance_delta_prev",
+      "capacity_c10",
+      "soh",
+      "capacity_delta_prev",
+      "soh_delta_prev"
+    ]
+  }
+}

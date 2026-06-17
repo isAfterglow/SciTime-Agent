@@ -1,0 +1,30 @@
+{
+  "task": "early_point_to_last",
+  "dataset": "data/processed/battery/expt_2_2/summary_early_point_to_last_dataset.csv",
+  "target": "target_soh_last",
+  "variant": "strict_with_cc0p1_pca",
+  "include_handcrafted": false,
+  "models": [
+    "LinearRegression",
+    "GradientBoosting",
+    "RandomForest",
+    "Ridge"
+  ],
+  "feature_columns": [
+    "temperature",
+    "rpt_index",
+    "charge_throughput",
+    "energy_throughput",
+    "ageing_cycles",
+    "days_of_degradation",
+    "delta_charge_throughput",
+    "soc_range",
+    "resistance_0p1s",
+    "resistance_delta_prev",
+    "cc0p1_pca_1",
+    "cc0p1_pca_2",
+    "cc0p1_pca_3",
+    "cc0p1_pca_4",
+    "cc0p1_pca_5"
+  ]
+}

@@ -1,0 +1,7 @@
+cell_id,main_summary_exists,set_summary_exists,expected_rpt_count,n_cc_0p1c,n_cc_0p5c,n_gitt_25p,n_gitt_5p,n_hybrid_0p5c,n_hybrid_1c,missing_files,n_missing_files,is_complete
+A,True,True,13,13,7,7,7,6,6,[],0,True
+B,True,True,13,13,7,7,7,6,6,[],0,True
+C,True,True,13,13,7,7,7,6,6,[],0,True
+D,True,True,13,13,7,7,7,6,6,[],0,True
+E,True,True,13,13,7,7,7,6,6,[],0,True
+F,True,True,13,13,7,7,7,6,6,[],0,True
