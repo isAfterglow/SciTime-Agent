@@ -11,6 +11,8 @@ from src.pipelines.battery_summary_baseline import (
     plot_soh_degradation,
     plot_predictions,
 )
+from src.tools.evaluator import average_metrics, save_metrics_bundle, save_predictions
+from src.tools.report_generator import generate_markdown_report
 
 
 def main():
@@ -69,11 +71,18 @@ def main():
         target_col=args.target,
     )
 
-    metrics_path = out_dir / "summary_baseline_metrics.csv"
-    predictions_path = out_dir / "summary_baseline_predictions.csv"
-
-    metrics_df.to_csv(metrics_path, index=False)
-    predictions_df.to_csv(predictions_path, index=False)
+    metric_outputs = save_metrics_bundle(
+        metrics_df,
+        out_dir,
+        metrics_filename="summary_baseline_metrics.csv",
+        average_filename="summary_baseline_average_metrics.csv",
+        group_cols=["model"],
+    )
+    prediction_outputs = save_predictions(
+        predictions_df,
+        out_dir,
+        filename="summary_baseline_predictions.csv",
+    )
 
     print("=" * 80)
     print("Metrics")
@@ -85,16 +94,7 @@ def main():
     print("Average metrics by model")
     print("=" * 80)
 
-    avg_metrics = (
-        metrics_df
-        .groupby("model")[["mae", "rmse", "mape", "r2"]]
-        .mean()
-        .sort_values("rmse")
-        .reset_index()
-    )
-
-    avg_metrics_path = out_dir / "summary_baseline_average_metrics.csv"
-    avg_metrics.to_csv(avg_metrics_path, index=False)
+    avg_metrics = average_metrics(metrics_df, group_cols=["model"]).sort_values("rmse").reset_index(drop=True)
 
     print(avg_metrics.to_string(index=False))
 
@@ -108,11 +108,47 @@ def main():
         fig_dir,
     )
 
+    report_path = generate_markdown_report(
+        title="Battery Summary Baseline",
+        sections=[
+            {
+                "header": "Run Config",
+                "kv": {
+                    "dataset": str(dataset_path),
+                    "rpt_table": str(rpt_table_path),
+                    "target": args.target,
+                    "output_dir": str(out_dir),
+                },
+            },
+            {
+                "header": "Dataset Shape",
+                "kv": {
+                    "n_rows": df.shape[0],
+                    "n_cols": df.shape[1],
+                },
+            },
+            {
+                "header": "Average Metrics",
+                "body": avg_metrics.to_string(index=False),
+            },
+            {
+                "header": "Artifacts",
+                "kv": {
+                    **metric_outputs,
+                    **prediction_outputs,
+                    "figures_dir": str(fig_dir),
+                },
+            },
+        ],
+        out_path=out_dir / "summary_baseline_report.md",
+    )
+
     print()
-    print(f"Saved metrics to: {metrics_path}")
-    print(f"Saved average metrics to: {avg_metrics_path}")
-    print(f"Saved predictions to: {predictions_path}")
+    print(f"Saved metrics to: {metric_outputs['metrics']}")
+    print(f"Saved average metrics to: {metric_outputs['average_metrics']}")
+    print(f"Saved predictions to: {prediction_outputs['predictions']}")
     print(f"Saved figures to: {fig_dir}")
+    print(f"Saved report to: {report_path}")
 
 
 if __name__ == "__main__":

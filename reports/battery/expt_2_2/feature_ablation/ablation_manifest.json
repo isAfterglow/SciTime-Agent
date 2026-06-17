@@ -2,10 +2,7 @@
   "target": "target_soh_next",
   "dataset": "data/processed/battery/expt_2_2/summary_next_soh_dataset.csv",
   "models": [
-    "LinearRegression",
-    "GradientBoosting",
-    "RandomForest",
-    "Ridge"
+    "GradientBoosting"
   ],
   "feature_sets": {
     "persistence": [

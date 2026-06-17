@@ -36,9 +36,6 @@
     "days_of_degradation_rpt3"
   ],
   "models": [
-    "LinearRegression",
-    "GradientBoosting",
-    "RandomForest",
-    "Ridge"
+    "GradientBoosting"
   ]
 }

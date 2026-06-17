@@ -1,0 +1,3 @@
+model,accuracy,f1,roc_auc,n_train,n_test
+LogisticRegression,1.0,1.0,1.0,9,3
+RandomForestClassifier,1.0,1.0,1.0,9,3

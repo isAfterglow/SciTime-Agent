@@ -1,0 +1,25 @@
+{
+  "dataset_path":"\/home\/ai4mater\/003-Scitime-agent\/scitime-agent\/data\/demo\/generic_regression_demo.csv",
+  "target_col":"target_value",
+  "task_type":"regression",
+  "feature_cols":[
+    "sample_id",
+    "temperature",
+    "material_type",
+    "cycles",
+    "throughput"
+  ],
+  "numeric_cols":[
+    "temperature",
+    "cycles",
+    "throughput"
+  ],
+  "categorical_cols":[
+    "sample_id",
+    "material_type"
+  ],
+  "models":[
+    "LinearRegression",
+    "RandomForestRegressor"
+  ]
+}

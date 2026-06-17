@@ -5,10 +5,7 @@
   "variant": "strict_with_cc0p1_handcrafted_pca",
   "include_handcrafted": true,
   "models": [
-    "LinearRegression",
-    "GradientBoosting",
-    "RandomForest",
-    "Ridge"
+    "GradientBoosting"
   ],
   "feature_columns": [
     "temperature",

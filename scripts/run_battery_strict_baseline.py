@@ -13,6 +13,8 @@ sys.path.append(str(PROJECT_ROOT))
 
 from src.features.battery_feature_sets import PROCESS_PLUS_RESISTANCE_FEATURES
 from src.pipelines.battery_summary_baseline import leave_one_cell_out_evaluation
+from src.tools.evaluator import average_metrics, save_metrics_bundle, save_predictions
+from src.tools.report_generator import generate_markdown_report
 
 
 TASKS = {
@@ -125,22 +127,21 @@ def run_one_task(task_name: str, dataset_rel: str, target_col: str, models: list
         include_models=models,
     )
 
-    avg_metrics_df = (
-        metrics_df
-        .groupby(["model"])[["mae", "rmse", "mape", "r2"]]
-        .mean()
-        .sort_values("rmse")
-        .reset_index()
-    )
-
-    metrics_path = out_dir / "strict_metrics.csv"
-    avg_metrics_path = out_dir / "strict_average_metrics.csv"
-    predictions_path = out_dir / "strict_predictions.csv"
+    avg_metrics_df = average_metrics(metrics_df, group_cols=["model"]).sort_values("rmse").reset_index(drop=True)
     manifest_path = out_dir / "strict_manifest.json"
 
-    metrics_df.to_csv(metrics_path, index=False)
-    avg_metrics_df.to_csv(avg_metrics_path, index=False)
-    predictions_df.to_csv(predictions_path, index=False)
+    metric_outputs = save_metrics_bundle(
+        metrics_df,
+        out_dir,
+        metrics_filename="strict_metrics.csv",
+        average_filename="strict_average_metrics.csv",
+        group_cols=["model"],
+    )
+    prediction_outputs = save_predictions(
+        predictions_df,
+        out_dir,
+        filename="strict_predictions.csv",
+    )
 
     manifest = {
         "task": task_name,
@@ -157,6 +158,43 @@ def run_one_task(task_name: str, dataset_rel: str, target_col: str, models: list
     plot_metric_bars(avg_metrics_df, "r2", fig_dir / "strict_r2.png")
     plot_predictions(predictions_df, fig_dir, task_name)
 
+    report_path = generate_markdown_report(
+        title=f"Strict No-Shortcut - {task_name}",
+        sections=[
+            {
+                "header": "Run Config",
+                "kv": {
+                    "task": task_name,
+                    "dataset": dataset_rel,
+                    "target": target_col,
+                    "feature_set": "process_plus_resistance",
+                    "models": ", ".join(models),
+                },
+            },
+            {
+                "header": "Dataset Shape",
+                "kv": {
+                    "n_rows": df.shape[0],
+                    "n_cols": df.shape[1],
+                },
+            },
+            {
+                "header": "Average Metrics",
+                "body": avg_metrics_df.to_string(index=False),
+            },
+            {
+                "header": "Artifacts",
+                "kv": {
+                    **metric_outputs,
+                    **prediction_outputs,
+                    "manifest": str(manifest_path),
+                    "figures_dir": str(fig_dir),
+                },
+            },
+        ],
+        out_path=out_dir / "strict_report.md",
+    )
+
     print()
     print("=" * 80)
     print(f"Strict no-shortcut task: {task_name}")
@@ -169,10 +207,11 @@ def run_one_task(task_name: str, dataset_rel: str, target_col: str, models: list
     print()
     print(avg_metrics_df.to_string(index=False))
     print()
-    print(f"Saved metrics to: {metrics_path}")
-    print(f"Saved average metrics to: {avg_metrics_path}")
-    print(f"Saved predictions to: {predictions_path}")
+    print(f"Saved metrics to: {metric_outputs['metrics']}")
+    print(f"Saved average metrics to: {metric_outputs['average_metrics']}")
+    print(f"Saved predictions to: {prediction_outputs['predictions']}")
     print(f"Saved figures to: {fig_dir}")
+    print(f"Saved report to: {report_path}")
 
 
 def main():

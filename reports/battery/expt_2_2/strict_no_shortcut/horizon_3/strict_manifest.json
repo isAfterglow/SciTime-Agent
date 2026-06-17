@@ -16,9 +16,6 @@
     "resistance_delta_prev"
   ],
   "models": [
-    "LinearRegression",
-    "GradientBoosting",
-    "RandomForest",
-    "Ridge"
+    "GradientBoosting"
   ]
 }

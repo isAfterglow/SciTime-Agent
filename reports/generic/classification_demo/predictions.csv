@@ -1,0 +1,7 @@
+sample_id,temperature,material_type,cycles,throughput,fast_fail,y_true,y_pred,y_score,model
+S11,35,LCO,160,190.2,1,1,1,0.6156351170109206,LogisticRegression
+S05,45,LCO,130,155.0,0,0,0,0.00037259571353318873,LogisticRegression
+S07,25,NMC,90,100.0,0,0,0,5.000746284825396e-10,LogisticRegression
+S11,35,LCO,160,190.2,1,1,1,0.56,RandomForestClassifier
+S05,45,LCO,130,155.0,0,0,0,0.295,RandomForestClassifier
+S07,25,NMC,90,100.0,0,0,0,0.14,RandomForestClassifier
